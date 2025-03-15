@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "805122226973",
+    "project_id": "mobsecpackage",
+    "storage_bucket": "mobsecpackage.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:805122226973:android:ac5873092f986b81477ff4",
+        "android_client_info": {
+          "package_name": "com.example.bdwisher"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQVF0c88yFKRuYyEdq_ftWU_uL3txEUsg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
