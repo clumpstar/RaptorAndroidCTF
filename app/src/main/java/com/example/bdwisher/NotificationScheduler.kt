@@ -105,37 +105,46 @@ object NotificationScheduler {
 //        }
 //    }
 
-    fun getFlagFromFirestore(context: Context): String{
+    fun getFlagFromFirestore(context: Context, callback: (String) -> Unit) {
         val db = FirebaseFirestore.getInstance()
         val documentId = context.getString(R.string.document)
 
-        var flag = ""
+        val flagList = arrayListOf<String>()
 
         db.collection("flags").document(documentId)
             .get()
             .addOnSuccessListener { document ->
                 if (document.exists()) {
-                    flag = document.getString("flag3") ?: "N/A"
+                    for (i in 1..5) { // Assuming flag1 to flag5
+                        val flag = document.getString("flag$i") ?: "N/A"
+                        flagList.add(flag)
+                    }
+                    Log.d("GotFlags", flagList.toString())
+
+                    // Return the first flag via callback
+                    callback(flagList.getOrElse(1) { "N/A" })
                 } else {
-                    println("Document does not exist!")
+                    Log.e("Firestore", "Document does not exist!")
+                    callback("N/A") // Return "N/A" if the document doesn't exist
                 }
             }
             .addOnFailureListener { exception ->
-                println("Error fetching flags: ${exception.message}")
+                Log.e("Firestore", "Error fetching flags: ${exception.message}")
+                callback("N/A") // Return "N/A" if fetching fails
             }
-
-        Log.d("GotFLag", flag)
-
-        return flag
-
     }
+
+
 
     fun scheduleBirthdayNotification(context: Context, birthday: Birthday) {
         try {
 
             if (wasNotificationShown(context, birthday)) {
                 Log.d("NotificationScheduler", "Notification already shown for ${birthday.name} this year. Skipping...")
-                Log.d("NotificationScheduler", "ooouch!! the flag is misplaced ${getFlagFromFirestore(context)}")
+//                Log.d("NotificationScheduler", "ooouch!! the flag is misplaced ${getFlagFromFirestore(context)}")
+                getFlagFromFirestore(context) { firstFlag ->
+                    Log.d("NotificationScheduler", "ooouch!! the flag is misplaced $firstFlag")
+                }
                 return
             }
 
@@ -153,14 +162,14 @@ object NotificationScheduler {
             birthdayCal.set(Calendar.MINUTE, 0)
             birthdayCal.set(Calendar.SECOND, 0)
 
-            val notificationTime = birthdayCal.timeInMillis - TimeUnit.MINUTES.toMillis(352)
+            val notificationTime = birthdayCal.timeInMillis - TimeUnit.MINUTES.toMillis(241)
 
             // Check if notificationTime is in the past
             if (notificationTime <= System.currentTimeMillis()) {
                 birthdayCal.add(Calendar.YEAR, 1) // Move to next year
             }
 
-            val adjustedNotificationTime = birthdayCal.timeInMillis - TimeUnit.MINUTES.toMillis(352)
+            val adjustedNotificationTime = birthdayCal.timeInMillis - TimeUnit.MINUTES.toMillis(241)
 
             val notificationIntent = Intent(context, BirthdayNotificationReceiver::class.java).apply {
                 putExtra("name", birthday.name)

@@ -39,20 +39,22 @@ class BirthdayNotificationReceiver : BroadcastReceiver() {
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
-            // Create notification
-            val builder = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
-                .setSmallIcon(android.R.drawable.ic_dialog_info)
-                .setContentTitle("Birthday Reminder")
-                .setContentText("$name's birthday is tomorrow ($date)!")
-                .setStyle(NotificationCompat.BigTextStyle()
-                .bigText("Don't forget to wish $name with this flag ${getFlagFromFirestore(context)}"))
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setContentIntent(pendingIntent)
-                .setAutoCancel(true)
+            getFlagFromFirestore(context) { firstFlag ->
+                // Create notification
+                val builder = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
+                    .setSmallIcon(android.R.drawable.ic_dialog_info)
+                    .setContentTitle("Birthday Reminder")
+                    .setContentText("$name's birthday is tomorrow ($date)!")
+                    .setStyle(NotificationCompat.BigTextStyle()
+                        .bigText("Don't forget to wish $name his birthday wishes with $firstFlag"))
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .setContentIntent(pendingIntent)
+                    .setAutoCancel(true)
 
-            // Show notification
-            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.notify(id, builder.build())
+                // Show notification
+                val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                notificationManager.notify(id, builder.build())
+            }
 
             Log.d("BirthdayNotification", "Notification sent for $name's birthday")
 
@@ -61,27 +63,32 @@ class BirthdayNotificationReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun getFlagFromFirestore(context: Context): String{
+    fun getFlagFromFirestore(context: Context, callback: (String) -> Unit) {
         val db = FirebaseFirestore.getInstance()
         val documentId = context.getString(R.string.document)
-        var flag = ""
+
+        val flagList = arrayListOf<String>()
 
         db.collection("flags").document(documentId)
             .get()
             .addOnSuccessListener { document ->
                 if (document.exists()) {
-                    flag = document.getString("flag1") ?: "N/A"
+                    for (i in 1..5) { // Assuming flag1 to flag5
+                        val flag = document.getString("flag$i") ?: "N/A"
+                        flagList.add(flag)
+                    }
+                    Log.d("GotFlags", flagList.toString())
+
+                    // Return the first flag via callback
+                    callback(flagList.getOrElse(2) { "N/A" })
                 } else {
-                    println("Document does not exist!")
+                    Log.e("Firestore", "Document does not exist!")
+                    callback("N/A") // Return "N/A" if the document doesn't exist
                 }
             }
             .addOnFailureListener { exception ->
-                println("Error fetching flags: ${exception.message}")
+                Log.e("Firestore", "Error fetching flags: ${exception.message}")
+                callback("N/A") // Return "N/A" if fetching fails
             }
-
-        Log.d("GotFLag", flag)
-
-        return flag
-
     }
 }

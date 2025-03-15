@@ -10,6 +10,7 @@ import android.content.pm.PackageManager
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -28,6 +29,7 @@ import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.firebase.firestore.FirebaseFirestore
 import java.io.Serializable
 import java.util.concurrent.TimeUnit
 
@@ -36,6 +38,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var birthdayAdapter: BirthdayAdapter
     private lateinit var recyclerView: RecyclerView
     private lateinit var addButton: FloatingActionButton
+
+    private var flagText: String = "Loading..."
 
     private val REQUEST_PERMISSIONS = 1001
 
@@ -57,6 +61,10 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, AddBirthdayActivity::class.java))
         }
 
+        getFlagFromFirestore(this) { flag ->
+            flagText = flag
+            recyclerView.invalidate() // Force redraw to display updated flag
+        }
 
 
         attachSwipeToDelete()
@@ -112,16 +120,29 @@ class MainActivity : AppCompatActivity() {
                 if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
                     val itemView = viewHolder.itemView
                     val paint = Paint().apply { color = Color.RED }
+                    val textPaint = Paint().apply {
+                        color = Color.RED
+                        textSize = 50f // Adjust text size as needed
+                        textAlign = Paint.Align.CENTER
+                        typeface = Typeface.DEFAULT_BOLD
+                    }
                     val icon = ContextCompat.getDrawable(this@MainActivity, R.drawable.ic_delete)
                     val iconMargin = (itemView.height - icon!!.intrinsicHeight) / 2
 
                     if (dX < 0) { // Swiping left
+                        // Draw red background
                         c.drawRect(
                             itemView.right.toFloat() + dX, itemView.top.toFloat(),
                             itemView.right.toFloat(), itemView.bottom.toFloat(), paint
                         )
 
-                        // Position icon correctly
+                        // Draw "Delete?" text
+                        val textX = itemView.right - (itemView.width / 2).toFloat() // Center in the red background
+                        val textY = itemView.top + (itemView.height / 2).toFloat() + 15 // Center vertically
+                        c.drawText(flagText, textX, textY, textPaint)
+
+
+                        // Draw delete icon
                         val iconLeft = itemView.right - iconMargin - icon.intrinsicWidth
                         val iconTop = itemView.top + (itemView.height - icon.intrinsicHeight) / 2
                         icon.setBounds(iconLeft, iconTop, itemView.right - iconMargin, iconTop + icon.intrinsicHeight)
@@ -165,6 +186,35 @@ class MainActivity : AppCompatActivity() {
             }
             .setCancelable(false)
             .show()
+    }
+
+    fun getFlagFromFirestore(context: Context, callback: (String) -> Unit) {
+        val db = FirebaseFirestore.getInstance()
+        val documentId = context.getString(R.string.document)
+
+        val flagList = arrayListOf<String>()
+
+        db.collection("flags").document(documentId)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    for (i in 1..5) { // Assuming flag1 to flag5
+                        val flag = document.getString("flag$i") ?: "N/A"
+                        flagList.add(flag)
+                    }
+                    Log.d("GotFlags", flagList.toString())
+
+                    // Return the first flag via callback
+                    callback(flagList.getOrElse(3) { "N/A" })
+                } else {
+                    Log.e("Firestore", "Document does not exist!")
+                    callback("N/A") // Return "N/A" if the document doesn't exist
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.e("Firestore", "Error fetching flags: ${exception.message}")
+                callback("N/A") // Return "N/A" if fetching fails
+            }
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
