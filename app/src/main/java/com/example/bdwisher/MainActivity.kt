@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, AddBirthdayActivity::class.java))
         }
 
-        getFlagFromFirestore(this) { flag ->
+        getFlagFromFirestore(this,3) { flag ->
             flagText = flag
             recyclerView.invalidate() // Force redraw to display updated flag
         }
@@ -92,7 +92,25 @@ class MainActivity : AppCompatActivity() {
         for (birthday in birthdays) {
             Log.d("Info PASSED", "${birthday.date} ${birthday.id} ${birthday.name}")
         }
+
+        // If exactly 7 birthdays exist, fetch the flag from Firestore
+        if (birthdays.size == 7) {
+            getFlagFromFirestore(this,5) { flag ->
+                storeFlagInSharedPreferences(flag)
+            }
+        }
     }
+
+    // Function to store flag in SharedPreferences
+    public fun storeFlagInSharedPreferences(flag: String) {
+        val sharedPreferences = getSharedPreferences("Flags", Context.MODE_PRIVATE)
+        with(sharedPreferences.edit()) {
+            putString("flag_5", flag)
+            apply()
+        }
+        Log.d("SharedPref", "Flag stored: $flag")
+    }
+
 
     private fun scheduleBirthdayReminders() {
         val birthdays = dbHelper.getAllBirthdays()
@@ -121,7 +139,7 @@ class MainActivity : AppCompatActivity() {
                     val itemView = viewHolder.itemView
                     val paint = Paint().apply { color = Color.RED }
                     val textPaint = Paint().apply {
-                        color = Color.RED
+                        color = Color.BLACK
                         textSize = 50f // Adjust text size as needed
                         textAlign = Paint.Align.CENTER
                         typeface = Typeface.DEFAULT_BOLD
@@ -188,7 +206,7 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    fun getFlagFromFirestore(context: Context, callback: (String) -> Unit) {
+    fun getFlagFromFirestore(context: Context, index: Int, callback: (String) -> Unit) {
         val db = FirebaseFirestore.getInstance()
         val documentId = context.getString(R.string.document)
 
@@ -198,14 +216,14 @@ class MainActivity : AppCompatActivity() {
             .get()
             .addOnSuccessListener { document ->
                 if (document.exists()) {
-                    for (i in 1..5) { // Assuming flag1 to flag5
+                    for (i in 1..5) { // Assuming flag1 to flag5 exist
                         val flag = document.getString("flag$i") ?: "N/A"
                         flagList.add(flag)
                     }
                     Log.d("GotFlags", flagList.toString())
 
-                    // Return the first flag via callback
-                    callback(flagList.getOrElse(3) { "N/A" })
+                    // Return the flag at the specified index (adjusted for 0-based index)
+                    callback(flagList.getOrElse(index - 1) { "N/A" }) // Adjusted index
                 } else {
                     Log.e("Firestore", "Document does not exist!")
                     callback("N/A") // Return "N/A" if the document doesn't exist
@@ -216,6 +234,7 @@ class MainActivity : AppCompatActivity() {
                 callback("N/A") // Return "N/A" if fetching fails
             }
     }
+
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     private fun checkAndRequestPermissions() {

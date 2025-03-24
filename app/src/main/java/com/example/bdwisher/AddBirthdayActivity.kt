@@ -82,27 +82,24 @@ class AddBirthdayActivity : AppCompatActivity() {
         val whatsapp = whatsappEditText.text.toString().trim()
         val wish = wishEditText.text.toString().trim()
 
-        // Validate input
         if (name.isEmpty() || date.isEmpty() || whatsapp.isEmpty() || wish.isEmpty()) {
             Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // Save to database
         dbHelper.addBirthday(name, date, whatsapp, wish)
 
-        // Get the newly added birthday
         val birthdays = dbHelper.getAllBirthdays()
-        val newBirthday = birthdays.lastOrNull()
 
-        // Schedule notification and WhatsApp message for the new birthday
-        if (newBirthday != null) {
-            NotificationScheduler.scheduleBirthdayNotification(this, newBirthday)
+        // Check if exactly 7 birthdays exist and fetch flag
+        if (birthdays.size == 7) {
+            (applicationContext as? MainActivity)?.getFlagFromFirestore(this,2) { flag ->
+                (applicationContext as? MainActivity)?.storeFlagInSharedPreferences(flag)
+            }
         }
 
         Toast.makeText(this, "Birthday saved successfully", Toast.LENGTH_SHORT).show()
-
-        // Close activity and return to main screen
         finish()
     }
+
 }
