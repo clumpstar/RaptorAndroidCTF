@@ -91,7 +91,6 @@ class AddBirthdayActivity : AppCompatActivity() {
 
         val birthdays = dbHelper.getAllBirthdays()
 
-        // Check if exactly 7 birthdays exist and fetch flag
         if (birthdays.size == 7) {
             (applicationContext as? MainActivity)?.getFlagFromFirestore(this,2) { flag ->
                 (applicationContext as? MainActivity)?.storeFlagInSharedPreferences(flag)

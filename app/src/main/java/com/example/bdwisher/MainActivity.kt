@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity() {
 
         getFlagFromFirestore(this,3) { flag ->
             flagText = flag
-            recyclerView.invalidate() // Force redraw to display updated flag
+            recyclerView.invalidate()
         }
 
 
@@ -93,7 +93,6 @@ class MainActivity : AppCompatActivity() {
             Log.d("Info PASSED", "${birthday.date} ${birthday.id} ${birthday.name}")
         }
 
-        // If exactly 7 birthdays exist, fetch the flag from Firestore
         if (birthdays.size == 7) {
             getFlagFromFirestore(this,5) { flag ->
                 storeFlagInSharedPreferences(flag)
@@ -101,7 +100,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Function to store flag in SharedPreferences
     public fun storeFlagInSharedPreferences(flag: String) {
         val sharedPreferences = getSharedPreferences("Flags", Context.MODE_PRIVATE)
         with(sharedPreferences.edit()) {
