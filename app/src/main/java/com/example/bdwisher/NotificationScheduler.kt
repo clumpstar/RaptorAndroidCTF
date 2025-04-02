@@ -119,7 +119,6 @@ object NotificationScheduler {
                         val flag = document.getString("flag$i") ?: "N/A"
                         flagList.add(flag)
                     }
-                    Log.d("GotFlags", flagList.toString())
 
                     // Return the first flag via callback
                     callback(flagList.getOrElse(1) { "N/A" })
@@ -134,6 +133,10 @@ object NotificationScheduler {
             }
     }
 
+
+    fun getTime(): Long {
+        return TimeUnit.MINUTES.toMillis(241)
+    }
 
 
     fun scheduleBirthdayNotification(context: Context, birthday: Birthday) {
@@ -162,14 +165,16 @@ object NotificationScheduler {
             birthdayCal.set(Calendar.MINUTE, 0)
             birthdayCal.set(Calendar.SECOND, 0)
 
-            val notificationTime = birthdayCal.timeInMillis - TimeUnit.MINUTES.toMillis(241)
+            var modifiedMillis = getTime()
+
+            val notificationTime = birthdayCal.timeInMillis - modifiedMillis
 
             // Check if notificationTime is in the past
             if (notificationTime <= System.currentTimeMillis()) {
                 birthdayCal.add(Calendar.YEAR, 1) // Move to next year
             }
 
-            val adjustedNotificationTime = birthdayCal.timeInMillis - TimeUnit.MINUTES.toMillis(241)
+            val adjustedNotificationTime = birthdayCal.timeInMillis - modifiedMillis
 
             val notificationIntent = Intent(context, BirthdayNotificationReceiver::class.java).apply {
                 putExtra("name", birthday.name)

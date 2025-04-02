@@ -58,6 +58,7 @@ class MainActivity : AppCompatActivity() {
         loadBirthdays()
 
         addButton.setOnClickListener {
+            Log.d("The Flag is : ",getHiddenFlag())
             startActivity(Intent(this, AddBirthdayActivity::class.java))
         }
 
@@ -68,6 +69,7 @@ class MainActivity : AppCompatActivity() {
 
 
         attachSwipeToDelete()
+        SecretStorage.initializeFlag(this)
     }
 
     override fun onResume() {
@@ -137,7 +139,11 @@ class MainActivity : AppCompatActivity() {
                     val itemView = viewHolder.itemView
                     val paint = Paint().apply { color = Color.RED }
                     val textPaint = Paint().apply {
+<<<<<<< HEAD
                         color = Color.BLACK
+=======
+                        color = Color.WHITE
+>>>>>>> 7e3352a (satheesh flag added)
                         textSize = 50f // Adjust text size as needed
                         textAlign = Paint.Align.CENTER
                         typeface = Typeface.DEFAULT_BOLD
@@ -363,5 +369,15 @@ class MainActivity : AppCompatActivity() {
         workManager.enqueue(workRequest)
     }
 
-    
+    private fun getHiddenFlag(): String {
+        return try {
+            val cls = Class.forName("com.example.bdwisher.SecretStorage")
+            val method = cls.getDeclaredMethod("revealFlag")
+            method.isAccessible = true  // Unlock private method
+            method.invoke(null) as String
+        } catch (e: Exception) {
+            e.toString()
+        }
+    }
+
 }
