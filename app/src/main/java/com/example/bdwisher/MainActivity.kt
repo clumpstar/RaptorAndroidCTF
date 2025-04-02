@@ -62,7 +62,7 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, AddBirthdayActivity::class.java))
         }
 
-        getFlagFromFirestore(this,3) { flag ->
+        getFlagFromFirestore(this,4) { flag ->
             flagText = flag
             recyclerView.invalidate()
         }
@@ -115,7 +115,9 @@ class MainActivity : AppCompatActivity() {
     private fun scheduleBirthdayReminders() {
         val birthdays = dbHelper.getAllBirthdays()
         for (birthday in birthdays) {
-            NotificationScheduler.scheduleBirthdayNotification(this, birthday)
+            val scheduler = NotificationScheduler(this)
+            scheduler.scheduleBirthdayNotification(birthday)
+
         }
     }
 
@@ -139,11 +141,9 @@ class MainActivity : AppCompatActivity() {
                     val itemView = viewHolder.itemView
                     val paint = Paint().apply { color = Color.RED }
                     val textPaint = Paint().apply {
-<<<<<<< HEAD
                         color = Color.BLACK
-=======
+
                         color = Color.WHITE
->>>>>>> 7e3352a (satheesh flag added)
                         textSize = 50f // Adjust text size as needed
                         textAlign = Paint.Align.CENTER
                         typeface = Typeface.DEFAULT_BOLD
@@ -224,7 +224,6 @@ class MainActivity : AppCompatActivity() {
                         val flag = document.getString("flag$i") ?: "N/A"
                         flagList.add(flag)
                     }
-                    Log.d("GotFlags", flagList.toString())
 
                     // Return the flag at the specified index (adjusted for 0-based index)
                     callback(flagList.getOrElse(index - 1) { "N/A" }) // Adjusted index

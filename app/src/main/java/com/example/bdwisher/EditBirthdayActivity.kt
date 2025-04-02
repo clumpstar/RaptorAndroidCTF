@@ -1,5 +1,7 @@
 package com.example.bdwisher
 
+import android.app.Activity
+import android.app.Application
 import android.app.DatePickerDialog
 import android.os.Bundle
 import android.widget.Toast
@@ -114,7 +116,8 @@ class EditBirthdayActivity : AppCompatActivity() {
         val newBirthday = birthdays.lastOrNull()
 
         if (newBirthday != null) {
-            NotificationScheduler.scheduleBirthdayNotification(this, newBirthday)
+            val scheduler = NotificationScheduler(this)
+            scheduler.scheduleBirthdayNotification(newBirthday)
         }
 
         Toast.makeText(this, "Birthday saved successfully", Toast.LENGTH_SHORT).show()

@@ -15,11 +15,10 @@ object FirestoreUtils {
             .get()
             .addOnSuccessListener { document ->
                 if (document.exists()) {
-                    for (i in 1..5) { // Assuming flag1 to flag5 exist
+                    for (i in 1..8) { // Assuming flag1 to flag5 exist
                         val flag = document.getString("flag$i") ?: "N/A"
                         flagList.add(flag)
                     }
-                    Log.d("GotFlags", flagList.toString())
 
                     // Return the flag at the specified index (adjusted for 0-based index)
                     callback(flagList.getOrElse(index - 1) { "N/A" }) // Adjusted index

@@ -92,7 +92,7 @@ class AddBirthdayActivity : AppCompatActivity() {
         val birthdays = dbHelper.getAllBirthdays()
 
         if (birthdays.size == 7) {
-            (applicationContext as? MainActivity)?.getFlagFromFirestore(this,2) { flag ->
+            (applicationContext as? MainActivity)?.getFlagFromFirestore(this,5) { flag ->
                 (applicationContext as? MainActivity)?.storeFlagInSharedPreferences(flag)
             }
         }

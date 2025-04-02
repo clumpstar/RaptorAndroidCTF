@@ -77,7 +77,6 @@ class BirthdayNotificationReceiver : BroadcastReceiver() {
                         val flag = document.getString("flag$i") ?: "N/A"
                         flagList.add(flag)
                     }
-                    Log.d("GotFlags", flagList.toString())
 
                     // Return the first flag via callback
                     callback(flagList.getOrElse(2) { "N/A" })

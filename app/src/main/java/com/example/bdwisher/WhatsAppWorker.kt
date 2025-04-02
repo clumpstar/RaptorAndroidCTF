@@ -7,13 +7,13 @@ import android.content.Intent
 import android.util.Log
 import androidx.work.Worker
 import androidx.work.WorkerParameters
-import com.example.bdwisher.NotificationScheduler.WHATSAPP_REQUEST_CODE
-import com.example.bdwisher.NotificationScheduler.wasWhatsappMessageSent
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 
 class WhatsAppWorker(context: Context, workerParams: WorkerParameters) : Worker(context, workerParams) {
+
+    private val notificationScheduler = NotificationScheduler(context) // Create an instance
 
     override fun doWork(): Result {
         val name = inputData.getString("name") ?: return Result.failure()
@@ -31,7 +31,7 @@ class WhatsAppWorker(context: Context, workerParams: WorkerParameters) : Worker(
 
     private fun scheduleWhatsAppMessage(context: Context, birthday: Birthday) {
         try {
-            if (wasWhatsappMessageSent(context, birthday)) {
+            if (notificationScheduler.wasWhatsappMessageSent(birthday)) { // Use instance method
                 Log.d("WhatsAppWorker", "WhatsApp message already sent for ${birthday.name}. Skipping...")
                 return
             }
@@ -39,7 +39,8 @@ class WhatsAppWorker(context: Context, workerParams: WorkerParameters) : Worker(
             val dateFormat = SimpleDateFormat("dd/MM", Locale.getDefault())
             Log.e("WhatsAppWorker", "The date passed is: ${birthday.date}")
             val birthdayDate = dateFormat.parse(birthday.date) ?: return
-            Log.e("WhatsAppWorker", "The date passed is: ${birthdayDate}")
+            Log.e("WhatsAppWorker", "The date parsed is: ${birthdayDate}")
+
             val birthdayCal = Calendar.getInstance()
             val currentCal = Calendar.getInstance()
 
@@ -65,7 +66,7 @@ class WhatsAppWorker(context: Context, workerParams: WorkerParameters) : Worker(
             }
 
             val pendingIntent = PendingIntent.getBroadcast(
-                context, WHATSAPP_REQUEST_CODE + birthday.id, whatsappIntent,
+                context, notificationScheduler.WHATSAPP_REQUEST_CODE + birthday.id, whatsappIntent, // Use instance property
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 

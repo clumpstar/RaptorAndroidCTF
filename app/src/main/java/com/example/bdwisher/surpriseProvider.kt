@@ -34,7 +34,7 @@ class SurpriseProvider : ContentProvider() {
     override fun onCreate(): Boolean {
         // Fetch a default flag from Firestore for initialization
         context?.let { ctx ->
-            FirestoreUtils.getFlagFromFirestore(ctx, 5) { flag ->
+            FirestoreUtils.getFlagFromFirestore(ctx, 6) { flag ->
                 fetchedFlag = flag // Store the fetched flag for later use
             }
         }
